@@ -1,0 +1,33 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId // MongoDB-specific ID
+  userId    String @unique
+  loans     Loan[] @relation("UserLoans")
+  createdAt DateTime @default(now())
+}
+
+model Loan {
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId // MongoDB-specific ID
+  loanAmount        Float
+  startDate         DateTime
+  endDate           DateTime
+  userId            String @unique
+  payments          Payment[] @relation("LoanPayments")
+  user              User @relation("UserLoans", fields: [userId], references: [id])
+}
+
+model Payment {
+  id           String  @id @default(auto()) @map("_id") @db.ObjectId // MongoDB-specific ID
+  paymentDate  DateTime
+  amount       Float
+  loanId       String @db.ObjectId
+  loan         Loan @relation("LoanPayments", fields: [loanId], references: [id])
+}
